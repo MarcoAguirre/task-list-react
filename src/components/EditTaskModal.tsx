@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import type { Task } from '../types/task';
-import { updateTask } from '../services/taskService';
+import { useTaskContext } from '../context/TaskContext';
 
 interface Props {
   task: Task;
   onClose: () => void;
-  onUpdated: (task: Task) => void;
 }
 
-export function EditTaskModal({ task, onClose, onUpdated }: Props) {
+export function EditTaskModal({ task, onClose }: Props) {
+  const { updateTaskById } = useTaskContext();
   const [form, setForm] = useState({
     name: task.name,
     priority: task.priority,
@@ -34,14 +34,12 @@ export function EditTaskModal({ task, onClose, onUpdated }: Props) {
     }
 
     try {
-      const updated = await updateTask(task.id, {
+      await updateTaskById(task.id, {
         ...form,
         name: form.name.trim(),
-        priority: form.priority as Task['priority'],
-        status: form.status as Task['status'],
+        priority: form.priority as 'Baja' | 'Media' | 'Alta',
+        status: form.status as 'Por hacer' | 'En progreso' | 'Completada',
       });
-
-      onUpdated(updated);
       onClose();
     } catch (err) {
       console.error(err);
