@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getTasks } from '../services/taskService';
+import { getTasks, deleteTask } from '../services/taskService';
 import type { Task } from '../types/task';
 
 type GroupedTasks = Record<Task['status'], Task[]>;
@@ -27,6 +27,16 @@ export function GroupedTaskList() {
 
   const grouped = groupByStatus(tasks);
 
+  async function handleDelete(id: number) {
+    try {
+      await deleteTask(id);
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error('Error al eliminar la tarea:', err);
+      alert('Error al eliminar la tarea');
+    }
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
       {Object.entries(grouped).map(([status, tasks]) => (
@@ -36,12 +46,18 @@ export function GroupedTaskList() {
             {tasks.map((task) => (
               <div
                 key={task.id}
-                className="bg-white p-3 rounded shadow border hover:shadow-md transition"
+                className="bg-white p-3 rounded shadow border hover:shadow-md transition relative"
               >
                 <p className="font-medium">{task.name}</p>
                 <p className="text-sm text-gray-600">
                   {task.priority} - {new Date(task.due_date).toLocaleDateString()}
                 </p>
+                <button
+                  onClick={() => handleDelete(task.id)}
+                  className="absolute top-2 right-2 text-sm text-red-500 hover:text-red-700"
+                >
+                  X
+                </button>
               </div>
             ))}
           </div>
