@@ -29,3 +29,21 @@ export async function deleteTask(id: number): Promise<void> {
     throw new Error('Error deleting task');
   }
 }
+
+export async function createTask(data: Omit<Task, 'id'>): Promise<Task> {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      apikey: API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Error al crear tarea');
+  }
+
+  const [newTask] = await response.json();
+  return newTask;
+}
