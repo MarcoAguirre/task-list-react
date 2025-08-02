@@ -1,11 +1,12 @@
-import "./App.css";
+import './index.css';
+import { TaskList } from './components/TaskList';
 
 function App() {
-
   return (
-    <>
-      <button className="bg-violet-500 hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700 ...">Save changes</button>
-    </>
+    <main className="min-h-screen bg-gray-100">
+      <h1 className="text-2xl font-bold text-center py-6">Lista de Tareas</h1>
+      <TaskList />
+    </main>
   );
 }
 
