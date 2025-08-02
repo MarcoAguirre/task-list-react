@@ -47,3 +47,22 @@ export async function createTask(data: Omit<Task, 'id'>): Promise<Task> {
   const [newTask] = await response.json();
   return newTask;
 }
+
+export async function updateTask(id: number, data: Partial<Omit<Task, 'id'>>): Promise<Task> {
+  const response = await fetch(`${API_URL}?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: API_KEY,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('Error actualizando tarea');
+  }
+
+  const [updatedTask] = await response.json();
+  return updatedTask;
+}
+
