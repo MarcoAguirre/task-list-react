@@ -59,18 +59,29 @@ export function GroupedTaskList() {
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="bg-white p-3 rounded shadow border hover:shadow-md transition relative"
-                  onClick={() => setTaskToEdit(task)}
+                  className="bg-white p-4 rounded shadow border hover:shadow-md transition relative"
                 >
-                  <p className="font-medium">{task.name}</p>
+                  <p className="font-medium mt-4">{task.name}</p>
                   <p className="text-sm text-gray-600">
                     {task.priority} - {new Date(task.due_date).toLocaleDateString()}
                   </p>
                   <button
-                    onClick={() => handleDelete(task.id)}
-                    className="absolute top-2 right-2 text-sm text-red-500 hover:text-red-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(task.id);
+                    }}
+                    className="absolute top-2 right-2 text-sm bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center hover:bg-red-700"
                   >
                     X
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTaskToEdit(task);
+                    }}
+                    className="absolute top-2 left-2 bg-blue-600 text-white rounded w-6 h-6 flex items-center justify-center text-sm hover:bg-blue-700"
+                  >
+                    ✎
                   </button>
                 </div>
               ))}
