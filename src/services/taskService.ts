@@ -16,3 +16,16 @@ export async function getTasks(): Promise<Task[]> {
 
   return response.json();
 }
+
+export async function deleteTask(id: number): Promise<void> {
+  const response = await fetch(`${API_URL}?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: {
+      apikey: API_KEY,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Error deleting task');
+  }
+}
