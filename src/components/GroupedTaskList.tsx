@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react';
-import { getTasks, deleteTask } from '../services/taskService';
+import { getTasks, deleteTask, updateTask } from '../services/taskService';
 import { CreateTaskModal } from './CreateTaskModal';
 import { EditTaskModal } from './EditTaskModal';
+import { DroppableColumn } from './DroppableColumn';
 import type { Task } from '../types/task';
+
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
 
 type GroupedTasks = Record<Task['status'], Task[]>;
 
@@ -20,16 +30,15 @@ export function GroupedTaskList() {
   const [showModal, setShowModal] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
 
+  const sensors = useSensors(useSensor(PointerSensor));
+  const grouped = groupByStatus(tasks);
+
   useEffect(() => {
     getTasks()
       .then(setTasks)
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
-
-  if (loading) return <p className="text-center mt-10">Cargando tareas...</p>;
-
-  const grouped = groupByStatus(tasks);
 
   async function handleDelete(id: number) {
     try {
@@ -41,6 +50,27 @@ export function GroupedTaskList() {
     }
   }
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const draggedTaskId = parseInt(active.id as string);
+    const newStatus = over.id as Task['status'];
+
+    const task = tasks.find((t) => t.id === draggedTaskId);
+    if (!task || task.status === newStatus) return;
+
+    try {
+      const updated = await updateTask(task.id, { status: newStatus });
+      setTasks((prev) => prev.map((t) => (t.id === updated.id ? { ...t, status: newStatus } : t)));
+    } catch (err) {
+      console.error(err);
+      alert('Error actualizando tarea');
+    }
+  };
+
+  if (loading) return <p className="text-center mt-10">Cargando tareas...</p>;
+
   return (
     <>
       <div className="flex justify-start px-4">
@@ -51,44 +81,13 @@ export function GroupedTaskList() {
           Add task
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-        {Object.entries(grouped).map(([status, tasks]) => (
-          <div key={status} className="bg-gray-100 rounded shadow-sm p-2">
-            <h2 className="text-lg font-semibold text-center mb-2">{status}</h2>
-            <div className="flex flex-col gap-2">
-              {tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="bg-white p-4 rounded shadow border hover:shadow-md transition relative"
-                >
-                  <p className="font-medium mt-4">{task.name}</p>
-                  <p className="text-sm text-gray-600">
-                    {task.priority} - {new Date(task.due_date).toLocaleDateString()}
-                  </p>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(task.id);
-                    }}
-                    className="absolute top-2 right-2 text-sm bg-red-600 text-white rounded w-6 h-6 flex items-center justify-center hover:bg-red-700"
-                  >
-                    X
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setTaskToEdit(task);
-                    }}
-                    className="absolute top-2 left-2 bg-blue-600 text-white rounded w-6 h-6 flex items-center justify-center text-sm hover:bg-blue-700"
-                  >
-                    ✎
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+          {Object.entries(grouped).map(([status, tasks]) => (
+            <DroppableColumn key={status} id={status} tasks={tasks} onTaskClick={setTaskToEdit} onTaskDelete={handleDelete}/>
+          ))}
+        </div>
+      </DndContext>
       {showModal && (
         <CreateTaskModal
           onClose={() => setShowModal(false)}
