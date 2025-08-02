@@ -3,6 +3,7 @@ import { getTasks, deleteTask, updateTask } from '../services/taskService';
 import { CreateTaskModal } from './CreateTaskModal';
 import { EditTaskModal } from './EditTaskModal';
 import { DroppableColumn } from './DroppableColumn';
+import { FilterBar } from './FilterBar';
 import type { Task } from '../types/task';
 
 import {
@@ -31,7 +32,22 @@ export function GroupedTaskList() {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor));
-  const grouped = groupByStatus(tasks);
+  const [filters, setFilters] = useState({
+    search: '',
+    status: '',
+    priority: '',
+    dueDate: '',
+  });
+
+  const filteredTasks = tasks.filter((task) => {
+    const matchSearch = task.name.toLowerCase().includes(filters.search.toLowerCase());
+    const matchStatus = filters.status ? task.status === filters.status : true;
+    const matchPriority = filters.priority ? task.priority === filters.priority : true;
+    const matchDueDate = filters.dueDate ? task.due_date === filters.dueDate : true;
+    return matchSearch && matchStatus && matchPriority && matchDueDate;
+  });
+
+  const grouped = groupByStatus(filteredTasks);
 
   useEffect(() => {
     getTasks()
@@ -73,6 +89,8 @@ export function GroupedTaskList() {
 
   return (
     <>
+      <FilterBar onFilterChange={setFilters} />
+
       <div className="flex justify-start px-4">
         <button
           onClick={() => setShowModal(true)}
@@ -84,7 +102,13 @@ export function GroupedTaskList() {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
           {Object.entries(grouped).map(([status, tasks]) => (
-            <DroppableColumn key={status} id={status} tasks={tasks} onTaskClick={setTaskToEdit} onTaskDelete={handleDelete}/>
+            <DroppableColumn
+              key={status}
+              id={status}
+              tasks={tasks}
+              onTaskClick={setTaskToEdit}
+              onTaskDelete={handleDelete}
+            />
           ))}
         </div>
       </DndContext>
