@@ -20,16 +20,25 @@ export function DraggableTaskCard({ task, onClick, onDelete }: Props) {
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
       style={style}
-      onClick={onClick}
-      className="bg-white p-3 rounded shadow border hover:shadow-md transition relative cursor-move"
+      className="bg-white p-3 rounded shadow border hover:shadow-md transition relative"
     >
-      <p className="font-medium mt-5">{task.name}</p>
+      <div
+        {...listeners}
+        {...attributes}
+        className="absolute bottom-2 right-2 text-gray-400 hover:text-gray-600 cursor-grab"
+        title="Mover tarea"
+      >
+        ☰
+      </div>
+
+      <p className="font-medium mt-4 cursor-pointer" onClick={onClick}>
+        {task.name}
+      </p>
       <p className="text-sm text-gray-600">
         {task.priority} - {new Date(task.due_date).toLocaleDateString()}
       </p>
+
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -39,6 +48,7 @@ export function DraggableTaskCard({ task, onClick, onDelete }: Props) {
       >
         X
       </button>
+
       <button
         onClick={(e) => {
           e.stopPropagation();
