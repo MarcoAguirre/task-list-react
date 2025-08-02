@@ -23,7 +23,7 @@ function groupByStatus(tasks: Task[]) {
 }
 
 export function GroupedTaskList() {
-  const { tasks, addTask, updateTaskById, deleteTaskById } = useTaskContext();
+  const { tasks, updateTaskById, deleteTaskById } = useTaskContext();
 
   const [showModal, setShowModal] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
@@ -88,14 +88,8 @@ export function GroupedTaskList() {
           ))}
         </div>
       </DndContext>
-      {showModal && <CreateTaskModal onClose={() => setShowModal(false)} onCreated={addTask} />}
-      {taskToEdit && (
-        <EditTaskModal
-          task={taskToEdit}
-          onClose={() => setTaskToEdit(null)}
-          onUpdated={(updated) => updateTaskById(updated.id, updated)}
-        />
-      )}
+      {showModal && <CreateTaskModal onClose={() => setShowModal(false)} />}
+      {taskToEdit && <EditTaskModal task={taskToEdit} onClose={() => setTaskToEdit(null)} />}
     </>
   );
 }

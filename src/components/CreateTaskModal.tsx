@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import type { Task } from '../types/task';
-import { createTask } from '../services/taskService';
+import { useTaskContext } from '../context/TaskContext';
 
 interface Props {
   onClose: () => void;
-  onCreated: (task: Task) => void;
 }
 
-export function CreateTaskModal({ onClose, onCreated }: Props) {
+export function CreateTaskModal({ onClose }: Props) {
+  const { addTask } = useTaskContext();
   const [form, setForm] = useState({
     name: '',
     priority: 'Baja',
@@ -34,18 +33,17 @@ export function CreateTaskModal({ onClose, onCreated }: Props) {
 
     const validPriorities = ['Baja', 'Media', 'Alta'];
     if (!validPriorities.includes(form.priority)) {
-        setError('El valor de prioridad no es válido.');
-        return;
+      setError('El valor de prioridad no es válido.');
+      return;
     }
 
     try {
-      const newTask = await createTask({
+      await addTask({
         ...form,
         name: form.name.trim(),
         status: 'Por hacer',
         priority: form.priority as 'Baja' | 'Media' | 'Alta',
       });
-      onCreated(newTask);
       onClose();
     } catch (err) {
       console.error(err);
