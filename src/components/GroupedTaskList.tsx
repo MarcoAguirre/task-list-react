@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getTasks, deleteTask } from '../services/taskService';
+import { CreateTaskModal } from './CreateTaskModal';
 import type { Task } from '../types/task';
 
 type GroupedTasks = Record<Task['status'], Task[]>;
@@ -74,6 +75,12 @@ export function GroupedTaskList() {
           </div>
         ))}
       </div>
+      {showModal && (
+        <CreateTaskModal
+          onClose={() => setShowModal(false)}
+          onCreated={(newTask) => setTasks((prev) => [...prev, newTask])}
+        />
+      )}
     </>
   );
 }
