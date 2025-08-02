@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getTasks, deleteTask } from '../services/taskService';
 import { CreateTaskModal } from './CreateTaskModal';
+import { EditTaskModal } from './EditTaskModal';
 import type { Task } from '../types/task';
 
 type GroupedTasks = Record<Task['status'], Task[]>;
@@ -17,6 +18,7 @@ export function GroupedTaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
 
   useEffect(() => {
     getTasks()
@@ -58,6 +60,7 @@ export function GroupedTaskList() {
                 <div
                   key={task.id}
                   className="bg-white p-3 rounded shadow border hover:shadow-md transition relative"
+                  onClick={() => setTaskToEdit(task)}
                 >
                   <p className="font-medium">{task.name}</p>
                   <p className="text-sm text-gray-600">
@@ -79,6 +82,15 @@ export function GroupedTaskList() {
         <CreateTaskModal
           onClose={() => setShowModal(false)}
           onCreated={(newTask) => setTasks((prev) => [...prev, newTask])}
+        />
+      )}
+      {taskToEdit && (
+        <EditTaskModal
+          task={taskToEdit}
+          onClose={() => setTaskToEdit(null)}
+          onUpdated={(updatedTask) =>
+            setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)))
+          }
         />
       )}
     </>
